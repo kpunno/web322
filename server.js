@@ -1,7 +1,7 @@
 var express = require("express");
 var path = require("path");
 var app = express();
-var blogService = require("./blog-service");
+var data = require("./blog-service");
 
 app.use(express.static('public'));
 
@@ -22,21 +22,34 @@ app.get("/about", (req,res) => {
 });
 
 app.get("/blog", (req,res)=>{
-    res.send("<p>This route will return a JSON formatted string containing all of the posts within the posts.json file whose published property is set to true</p>");
-}) 
-
-app.get("/posts", (req,res)=>{
-    res.send("<p>This route will return a JSON formatted string containing all the posts within the posts.json files</p>");
+    data.getPublishedPosts().then((data)=>{
+        res.json(data);
+    });
 }) 
 
 app.get("/categories", (req,res)=>{
-    res.send("<p>This route will return a JSON formatted string containing all of the categories within the categories.json file</p>");
+    data.getCategories().then((data)=>{
+        res.json(data);
+    });
 })
+
+app.get("/posts", (req,res)=>{
+    data.getAllPosts().then((data)=>{
+        res.json(data);
+    });
+});
 
 const path404 = path.join(__dirname, "/views/404.html");
 app.use((req,res) => {
     res.status(404).sendFile(path404);
 });
 
-app.listen(HTTP_PORT, onHttpStart);
+
+
+data.initialize().then(function() {
+    app.listen(HTTP_PORT, onHttpStart);
+}).catch(function(err) {
+    console.log("Unable to start server: " + err)
+});
+
 
