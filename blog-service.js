@@ -3,6 +3,13 @@ const fs = require("fs");
 var posts = [];
 var categories = [];
 
+
+/*
+read and parse posts.json, 
+then, if successful, 
+read and parse categories.json
+*/
+// initalizes data, rejects promise if failure occurs when reading file
 module.exports.initialize = function() {
     return new Promise((resolve, reject)=>{
         fs.readFile("./data/posts.json",'utf8',(err,data)=>{
@@ -29,6 +36,7 @@ module.exports.initialize = function() {
     });
 }
 
+// returns a resolved promise if the posts array is NOT empty
 module.exports.getPosts = function() {
     return new Promise((resolve,reject)=>{
         if(posts.length) {
@@ -38,6 +46,11 @@ module.exports.getPosts = function() {
     });
 }
 
+/*
+loops through the posts array, creating a new array on the 
+condition that each element is (published==true)
+*/
+// returns a resolved promise if the publishedPosts array is NOT empty
 module.exports.getPublishedPosts = function() {
     return new Promise((resolve, reject)=>{
         var publishedPosts = [];
@@ -53,6 +66,7 @@ module.exports.getPublishedPosts = function() {
     })
 }
 
+// returns a resolved promise if the categories array is NOT empty
 module.exports.getCategories = function() {
     return new Promise((resolve,reject)=>{
         if(categories.length == 0) {
