@@ -34,7 +34,7 @@ app.get("/categories", (req,res)=>{
 })
 
 app.get("/posts", (req,res)=>{
-    data.getAllPosts().then((data)=>{
+    data.getPosts().then((data)=>{
         res.json(data);
     });
 });

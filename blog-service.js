@@ -1,17 +1,15 @@
 const fs = require("fs");
 
 var posts = [];
-var publishedPosts = [];
 var categories = [];
 
 module.exports.initialize = function() {
     return new Promise((resolve, reject)=>{
         fs.readFile("./data/posts.json",'utf8',(err,data)=>{
             if(err){
-                reject(err);
+                reject("Error occured reading from posts.json: " + err);
             }
             else {
-                console.log("all good 1");
                 posts = JSON.parse(data);
                 resolve();
             }
@@ -20,10 +18,9 @@ module.exports.initialize = function() {
         return new Promise((resolve, reject)=>{
             fs.readFile("./data/categories.json", 'utf8',(err,data)=>{
                 if(err){
-                    reject(err);
+                    reject("Error occured reading from categories.json: " + err);
                 }
                 else {
-                    console.log("all good2");
                     categories = JSON.parse(data);
                     resolve();
                 }
@@ -32,28 +29,27 @@ module.exports.initialize = function() {
     });
 }
 
-module.exports.getAllPosts = function() {
+module.exports.getPosts = function() {
     return new Promise((resolve,reject)=>{
-        if(posts.length == 0) {
-            reject("No data exists in posts!");
-        }
-        else {
+        if(posts.length) {
             resolve(posts);
         }
+        else reject("No data exists in posts!");
     });
 }
 
 module.exports.getPublishedPosts = function() {
     return new Promise((resolve, reject)=>{
+        var publishedPosts = [];
         for (let i = 0; i < posts.length; i++){
             if (posts[i].published) {
                 publishedPosts.push(posts[i]);
             }
         }
-        if(!publishedPosts.length) {
-            reject("No published posts exist!");
+        if(publishedPosts.length) {
+            resolve(publishedPosts);
         }
-        else resolve(publishedPosts);
+        else reject("No published posts exist!");
     })
 }
 
