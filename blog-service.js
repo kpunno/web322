@@ -46,6 +46,18 @@ module.exports.getPosts = function() {
     });
 }
 
+// returns a resolved promise if the categories array is NOT empty
+module.exports.getCategories = function() {
+    return new Promise((resolve,reject)=>{
+        if(categories.length) {
+            resolve(categories);
+        }
+        else {
+            reject("No categories exist!");
+        }
+    });
+}
+
 /*
 loops through the posts array, creating a new array on the 
 condition that each element is (published==true)
@@ -64,16 +76,4 @@ module.exports.getPublishedPosts = function() {
         }
         else reject("No published posts exist!");
     })
-}
-
-// returns a resolved promise if the categories array is NOT empty
-module.exports.getCategories = function() {
-    return new Promise((resolve,reject)=>{
-        if(categories.length == 0) {
-            reject("No categories exist!");
-        }
-        else {
-            resolve(categories);
-        }
-    });
 }
