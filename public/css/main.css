@@ -1,3 +1,8 @@
-body {
-    background-color: rgb(223, 223, 223);
+#F04-container {
+    padding-top: 10%;
+    text-align: center;
+}
+
+#F04-exit-about:hover {
+    color: rgb(234, 234, 234);
 }

@@ -1,5 +1,21 @@
+/*********************************************************************************
+* 
+*  WEB322 – Assignment 02
+*  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  
+*  No part of this assignment has been copied manually or electronically 
+*  from any other source (including 3rd party web sites) or distributed to other students.
+* 
+*  Name:        Kristjan Punno 
+*  Student ID:  150695211 
+*  Date:        2022-09-28
+*
+*  Online (Cyclic) Link: https://tasty-headscarf-ox.cyclic.app/about 
+*
+********************************************************************************/ 
+
 const express = require("express");
 const path = require("path");
+const { emitWarning } = require("process");
 const app = express();
 const data = require("./blog-service");
 
@@ -42,11 +58,6 @@ app.get("/posts", (req,res)=>{
     });
 });
 
-// displays formatted, yet simple, redirect option when 404 occurs
-app.use((req,res) => {
-    res.status(404).send("<div class=\"container\"><h1>No Man\'s Land</h1><a style=\"color:grey\" href=\"/about\"><h2>Get me out of here!</h2></a></div>")
-});
-
 // initializes arrays containing .json data
 data.initialize().then(function() {
     app.listen(HTTP_PORT, onHttpStart);
@@ -54,4 +65,8 @@ data.initialize().then(function() {
     console.log("Unable to start server: " + err)
 });
 
-
+// displays formatted, yet simple, redirect-to-landing option when 404 occurs
+app.use((req,res) => {
+    var page404 = (path.join(__dirname,"./views/404.html"));
+    res.sendFile(page404);
+});
