@@ -9,7 +9,7 @@
 *  Student ID:  150695211 
 *  Date:        2022-09-28
 *
-*  Online (Cyclic) Link: https://tasty-headscarf-ox.cyclic.app/about 
+*  Online (Cyclic) Link: https://tasty-headscarf-ox.cyclic.app 
 *
 ********************************************************************************/ 
 
