@@ -37,6 +37,11 @@ app.get("/about", (req,res) => {
     res.sendFile(path.join(__dirname,"/views/about.html"));
 });
 
+// when url path is: /posts/add -> app will send /views/addPost.html
+app.get("/posts/add", (req,res) => {
+    res.sendFile(path.join(__dirname, "/views/addPost.html"))
+});
+
 // when application links to /blog, fetch and store (published==true) posts
 app.get("/blog", (req,res)=>{
     data.getPublishedPosts().then((data)=>{
