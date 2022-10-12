@@ -7,17 +7,31 @@
 * 
 *  Name:        Kristjan Punno 
 *  Student ID:  150695211 
-*  Date:        2022-09-28
+*  Date:        2022-10-11
 *
 *  Online (Cyclic) Link: https://tasty-headscarf-ox.cyclic.app 
 *
 ********************************************************************************/ 
+
+const multer = require('multer');
+const upload = multer();
+const streamifier = require('streamifier');
+const cloudinary = require('cloudinary').v2;
+
+
+cloudinary.config({
+    cloud_name: 'dkjnonulv',
+    api_key: '394872553728763',
+    api_secret: 'mDYTanKIKahn89A3XFxgryJDokk',
+    secure: true
+});
 
 const express = require("express");
 const path = require("path");
 const { emitWarning } = require("process");
 const app = express();
 const data = require("./blog-service");
+const { stringify } = require('querystring');
 
 app.use(express.static('public'));
 
@@ -37,11 +51,6 @@ app.get("/about", (req,res) => {
     res.sendFile(path.join(__dirname,"/views/about.html"));
 });
 
-// when url path is: /posts/add -> app will send /views/addPost.html
-app.get("/posts/add", (req,res) => {
-    res.sendFile(path.join(__dirname, "/views/addPost.html"))
-});
-
 // when application links to /blog, fetch and store (published==true) posts
 app.get("/blog", (req,res)=>{
     data.getPublishedPosts().then((data)=>{
@@ -56,12 +65,60 @@ app.get("/categories", (req,res)=>{
     });
 })
 
+// POSTS PATH //
+
 // when application links to /posts, fetch and display posts.json
 app.get("/posts", (req,res)=>{
     data.getPosts().then((data)=>{
         res.json(data);
     });
 });
+
+// when url path is: /posts/add -> app will send /views/addPost.html
+app.get("/posts/add", (req,res) => {
+    res.sendFile(path.join(__dirname, "/views/addPost.html"))
+});
+
+app.post("/posts/add", upload.single("featureImage"), (req,res) => {
+    if (req.file) {
+        let streamUpload = (req) => {
+            return new Promise((resolve, reject) => {
+                let stream = cloudinary.uploader.upload_stream(
+                    (error, result) => {
+                        if (result) {
+                            resolve(result);
+                        } else {
+                            reject(error);
+                        }
+                    }
+                );
+                streamifier.createReadStream(req.file.buffer).pipe(stream);
+            });
+        };
+        async function upload(req) {
+            let result = await streamUpload(req);
+            console.log(result);
+            return result;
+        }
+        upload(req).then((uploaded) => {
+            req.body.featureImage = uploaded.url;
+            data.addPost(req.body).then(function () {
+                res.redirect("/posts");
+            });
+        });
+    }
+    else {
+        req.body.featureImage = "";
+        data.addPost(req.body).then(function () {
+            res.redirect("/posts");
+        }).catch(function() {
+            console.log("Unable to add an empty post.");
+            res.redirect("/posts");
+        });
+    }
+});
+
+// !POSTS PATH
 
 // initializes arrays containing .json data
 data.initialize().then(function() {

@@ -75,5 +75,23 @@ module.exports.getPublishedPosts = function() {
             resolve(publishedPosts);
         }
         else reject("No published posts exist!");
+    });
+}
+
+module.exports.addPost = function (postData) {
+    return new Promise((resolve, reject) => {
+        if (postData.featureImage != "") {
+            var date = new Date;
+            let timestamp = date.getDate();
+            postData.postDate = timestamp;
+            postData.id = (posts.length + 1);
+            if (postData.published != "on") {
+                postData.published = false;
+            }
+            else postData.published = true;
+            posts.push(postData);
+            resolve(postData);
+        }
+        else reject(err);
     })
 }
