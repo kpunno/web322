@@ -13,10 +13,10 @@ then, if successful,
 read and parse categories.json
 */
 // initalizes data, rejects promise if failure occurs when reading file
-module.exports.initialize = function() {
-    return new Promise((resolve, reject)=>{
-        fs.readFile("./data/posts.json",'utf8',(err,data)=>{
-            if(err){
+module.exports.initialize = function () {
+    return new Promise((resolve, reject) => {
+        fs.readFile("./data/posts.json", 'utf8', (err, data) => {
+            if (err) {
                 reject("Error occured reading from posts.json: " + err);
             }
             else {
@@ -24,10 +24,10 @@ module.exports.initialize = function() {
                 resolve();
             }
         });
-    }).then(function() {
-        return new Promise((resolve, reject)=>{
-            fs.readFile("./data/categories.json", 'utf8',(err,data)=>{
-                if(err){
+    }).then(function () {
+        return new Promise((resolve, reject) => {
+            fs.readFile("./data/categories.json", 'utf8', (err, data) => {
+                if (err) {
                     reject("Error occured reading from categories.json: " + err);
                 }
                 else {
@@ -42,16 +42,16 @@ module.exports.initialize = function() {
 // GET POSTS + ADD POST + A3 FUNCTIONALITIES
 
 // returns a resolved promise if the posts array is NOT empty
-module.exports.getPosts = function() {
-    return new Promise((resolve,reject)=>{
-        if(posts.length) {
+module.exports.getPosts = function () {
+    return new Promise((resolve, reject) => {
+        if (posts.length) {
             resolve(posts);
         }
         else reject("No data exists in posts!");
     });
 }
 
-module.exports.getPostsByCategory = function(category) {
+module.exports.getPostsByCategory = function (category) {
     return new Promise((resolve, reject) => {
 
         // minCategory and maxCategory are global variables 
@@ -59,17 +59,17 @@ module.exports.getPostsByCategory = function(category) {
 
         if (category >= minCategory && category <= maxCategory) {
             var postsByCategory = [];
-            for (let i = 0; i < posts.length; i++){
+            for (let post of posts) {
 
                 // if posts[i].category is equal to parameter
-                if (posts[i].category == category) {
-                    postsByCategory.push(posts[i]);
+                if (post.category == category) {
+                    postsByCategory.push(post);
                 }
             }
             if (postsByCategory.length) {
                 resolve(postsByCategory);
             }
-            else reject ("No data exists in this category: ");
+            else reject("No data exists in this category: ");
         }
         else {
             reject("Category does not exist: ");
@@ -77,24 +77,28 @@ module.exports.getPostsByCategory = function(category) {
     })
 }
 
-module.exports.getPostsByMinDate = function(minDate) {
+module.exports.getPostsByMinDate = function (minDate) {
     return new Promise((resolve, reject) => {
         var postsByMinDate = [];
-        for (let post of posts){
+        for (let post of posts) {
+
             // if posts[i].postDate is greater than parameter
             if (post.postDate > minDate) {
                 postsByMinDate.push(post);
             }
         }
-        if (postsByMinDate.length) {resolve(postsByMinDate);}
-        else {reject("No data exists after supplied date.");}
+        if (postsByMinDate.length) { resolve(postsByMinDate); }
+        else { reject("No data exists after supplied date."); }
     });
 }
 
 module.exports.getPostByID = function (ID) {
     return new Promise((resolve, reject) => {
         let match = false;
+
         for (let post of posts) {
+
+            // if post.id matches parameter id
             if (post.id == ID) {
                 match = true;
                 resolve(post);
@@ -139,9 +143,9 @@ module.exports.addPost = function (postData) {
 
 
 // returns a resolved promise if the categories array is NOT empty
-module.exports.getCategories = function() {
-    return new Promise((resolve,reject)=>{
-        if(categories.length) {
+module.exports.getCategories = function () {
+    return new Promise((resolve, reject) => {
+        if (categories.length) {
             resolve(categories);
         }
         else {
@@ -155,15 +159,15 @@ loops through the posts array, creating a new array on the
 condition that each element is (published==true)
 */
 // returns a resolved promise if the publishedPosts array is NOT empty
-module.exports.getPublishedPosts = function() {
-    return new Promise((resolve, reject)=>{
+module.exports.getPublishedPosts = function () {
+    return new Promise((resolve, reject) => {
         var publishedPosts = [];
-        for (let i = 0; i < posts.length; i++){
-            if (posts[i].published) {
-                publishedPosts.push(posts[i]);
+        for (let post of posts) {
+            if (post.published) {
+                publishedPosts.push(post);
             }
         }
-        if(publishedPosts.length) {
+        if (publishedPosts.length) {
             resolve(publishedPosts);
         }
         else reject("No published posts exist!");
