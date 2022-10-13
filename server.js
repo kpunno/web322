@@ -1,6 +1,6 @@
 /*********************************************************************************
 * 
-*  WEB322 – Assignment 02
+*  WEB322 – Assignment 03
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  
 *  No part of this assignment has been copied manually or electronically 
 *  from any other source (including 3rd party web sites) or distributed to other students.
@@ -65,14 +65,52 @@ app.get("/categories", (req,res)=>{
     });
 })
 
+
 // POSTS PATH //
 
 // when application links to /posts, fetch and display posts.json
-app.get("/posts", (req,res)=>{
-    data.getPosts().then((data)=>{
-        res.json(data);
-    });
+app.get("/posts", (req, res) => {
+    let qString = req.query;
+
+    // if the id 'key' exists
+    if (qString.minDate) {
+        data.getPostsByMinDate(qString.minDate).then((data) => {
+            res.json(data);
+        }).catch(function(err) {
+            console.log(err);
+            res.redirect('/posts');
+        });
+    }
+
+    // if the category 'key' exists
+    else if (qString.category) {
+        data.getPostsByCategory(qString.category).then((data) => {
+            res.json(data);
+        }).catch(function(err) {
+            console.log(err);
+            res.redirect('/posts');
+        });
+    }
+    
+    // if neither category nor id keys exist
+    else {
+        data.getPosts().then((data) => {
+            res.json(data);
+        }).catch(function(err) {
+            console.log(err);
+        });
+    }
 });
+
+// get post by specified ID
+app.get("/post/:id", (req,res) => {
+    data.getPostByID(req.params.id).then((data) => {
+        res.json(data);
+    }).catch(function(err) {
+        console.log(err);
+        res.redirect('/posts');
+    });
+})
 
 // when url path is: /posts/add -> app will send /views/addPost.html
 app.get("/posts/add", (req,res) => {
