@@ -66,14 +66,12 @@ module.exports.getPostsByCategory = function (category) {
                     postsByCategory.push(post);
                 }
             }
-            if (postsByCategory.length) {
-                resolve(postsByCategory);
-            }
+            // resolve if new array contains data, reject if not
+            if (postsByCategory.length) { resolve(postsByCategory); }
             else reject("No data exists in this category: ");
         }
-        else {
-            reject("Category does not exist: ");
-        }
+        // if supplied category does not exist, reject
+        else reject("Category does not exist: ");
     })
 }
 
@@ -87,6 +85,7 @@ module.exports.getPostsByMinDate = function (minDate) {
                 postsByMinDate.push(post);
             }
         }
+        // resolve if new array contains data, reject if not
         if (postsByMinDate.length) { resolve(postsByMinDate); }
         else { reject("No data exists after supplied date."); }
     });

@@ -140,17 +140,25 @@ app.post("/posts/add", upload.single("featureImage"), (req,res) => {
         }
         upload(req).then((uploaded) => {
             req.body.featureImage = uploaded.url;
+
+            // calls addPost, which in turn, adds post to array 
+            // then redirects to posts
             data.addPost(req.body).then(function () {
                 res.redirect("/posts");
             });
         });
     }
     else {
+        
+        // will not process the post, as the feature image is non-existent
         req.body.featureImage = "";
         data.addPost(req.body).then(function () {
             res.redirect("/posts");
         }).catch(function() {
-            console.log("Unable to add an empty post.");
+
+            // catches the inability to process an empty image
+            // then redirects to posts
+            console.log(err);
             res.redirect("/posts");
         });
     }
