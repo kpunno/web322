@@ -149,12 +149,12 @@ app.post("/posts/add", upload.single("featureImage"), (req,res) => {
         });
     }
     else {
-        
+
         // will not process the post, as the feature image is non-existent
         req.body.featureImage = "";
         data.addPost(req.body).then(function () {
             res.redirect("/posts");
-        }).catch(function() {
+        }).catch(function(err) {
 
             // catches the inability to process an empty image
             // then redirects to posts
