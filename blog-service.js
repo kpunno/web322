@@ -173,3 +173,24 @@ module.exports.getPublishedPosts = function () {
     });
 }
 
+/*
+loops through the posts array, creating a new array on the 
+condition that each element is:
+    (published==true) && (category==<user_supplied_category>)
+*/
+// returns a resolved promise if the publishedPosts array is NOT empty
+module.exports.getPublishedPostsByCategory = function (category) {
+    return new Promise((resolve, reject) => {
+        var publishedPosts = [];
+        for (let post of posts) {
+            if ((post.published) && (post.category == category)) {
+                publishedPosts.push(post);
+            }
+        }
+        if (publishedPosts.length) {
+            resolve(publishedPosts);
+        }
+        else reject("No published posts exist!");
+    });
+}
+
