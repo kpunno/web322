@@ -41,7 +41,7 @@ app.engine('.hbs', exphbs.engine({
                 ((url == app.locals.activeRoute) ? ' class="active" ' : '') + 
                 '><a href="' + url + '">' + options.fn(this) + '</a></li>';
         },
-        
+
         equal: function (lvalue, rvalue, options) {
             if (arguments.length < 3)
                 throw new Error("Handlebars Helper equal needs 2 parameters");
@@ -125,7 +125,7 @@ app.get("/posts", (req, res) => {
     // if neither category nor id keys exist
     else {
         data.getPosts().then((data) => {
-            res.json(data);
+            res.render('posts', {posts : data});
         }).catch(function(err) {
             console.log(err);
         });
