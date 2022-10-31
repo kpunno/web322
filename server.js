@@ -105,9 +105,9 @@ app.get("/posts", (req, res) => {
     // if the id 'key' exists
     if (qString.minDate) {
         data.getPostsByMinDate(qString.minDate).then((data) => {
-            res.json(data);
-        }).catch(function(err) {
-            console.log(err);
+            res.render('posts', {posts : data});
+        }).catch((err) => {
+            res.render("posts", { message: "no results" });
             res.redirect('/posts');
         });
     }
@@ -115,10 +115,10 @@ app.get("/posts", (req, res) => {
     // if the category 'key' exists
     else if (qString.category) {
         data.getPostsByCategory(qString.category).then((data) => {
-            res.json(data);
-        }).catch(function(err) {
+            res.render('posts', {posts : data});
+        }).catch((err) => {
             console.log(err);
-            res.redirect('/posts');
+            res.render("posts", { message: "no results" });
         });
     }
     
@@ -126,8 +126,10 @@ app.get("/posts", (req, res) => {
     else {
         data.getPosts().then((data) => {
             res.render('posts', {posts : data});
-        }).catch(function(err) {
+        }).catch((err) => {
             console.log(err);
+            // maybe render something else in accordance with error
+            res.render("posts", { message: "no results" });
         });
     }
 });
@@ -136,7 +138,7 @@ app.get("/posts", (req, res) => {
 app.get("/post/:id", (req,res) => {
     data.getPostByID(req.params.id).then((data) => {
         res.json(data);
-    }).catch(function(err) {
+    }).catch((err) => {
         console.log(err);
         res.redirect('/posts');
     });
@@ -184,7 +186,7 @@ app.post("/posts/add", upload.single("featureImage"), (req,res) => {
         req.body.featureImage = "";
         data.addPost(req.body).then(function () {
             res.redirect("/posts");
-        }).catch(function(err) {
+        }).catch((err) => {
 
             // catches the inability to process an empty image
             // then redirects to posts
@@ -199,7 +201,7 @@ app.post("/posts/add", upload.single("featureImage"), (req,res) => {
 // initializes arrays containing .json data
 data.initialize().then(function() {
     app.listen(HTTP_PORT, onHttpStart);
-}).catch(function(err) {
+}).catch((err) => {
     console.log("Unable to start server: " + err)
 });
 
