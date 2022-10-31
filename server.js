@@ -207,6 +207,5 @@ data.initialize().then(function() {
 
 // displays formatted, yet simple, redirect-to-landing option when 404 occurs
 app.use((req,res) => {
-    var page404 = (path.join(__dirname,"./views/404.html"));
-    res.status(404).sendFile(page404);
+    res.status(404).render('404');
 });
