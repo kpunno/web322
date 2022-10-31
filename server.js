@@ -17,7 +17,7 @@ const multer = require('multer');
 const upload = multer();
 const streamifier = require('streamifier');
 const cloudinary = require('cloudinary').v2;
-
+const exphbs = require('express-handlebars');
 
 cloudinary.config({
     cloud_name: 'dkjnonulv',
@@ -28,10 +28,13 @@ cloudinary.config({
 
 const express = require("express");
 const path = require("path");
-const { emitWarning } = require("process");
+const { emitWarning, mainModule } = require("process");
 const app = express();
 const data = require("./blog-service");
 const { stringify } = require('querystring');
+
+app.engine('.hbs', exphbs.engine({ extname: '.hbs' }));
+app.set('view engine', '.hbs');
 
 app.use(express.static('public'));
 
@@ -48,7 +51,7 @@ app.get("/", (req,res) => {
 
 // landing page, displays buttons to redirect, and basic info
 app.get("/about", (req,res) => {
-    res.sendFile(path.join(__dirname,"/views/about.html"));
+    res.render('about');
 });
 
 // when application links to /blog, fetch and store (published==true) posts
