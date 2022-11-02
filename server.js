@@ -5,9 +5,10 @@
 *  No part of this assignment has been copied manually or electronically 
 *  from any other source (including 3rd party web sites) or distributed to other students.
 * 
+*  
 *  Name:        Kristjan Punno 
 *  Student ID:  150695211 
-*  Date:        2022-10-31
+*  Date:        2022-11-02
 *
 *  Online (Cyclic) Link: https://tasty-headscarf-ox.cyclic.app 
 *
@@ -68,7 +69,8 @@ function onHttpStart(){
     console.log("Express http server listening on " + HTTP_PORT);
 }
 
-// does something with app.locals
+// stores the active route, most importantly: 
+//      <viewingCategory>, which represents the current category id
 app.use(function(req,res,next){
     let route = req.path.substring(1);
     app.locals.activeRoute = "/" + (isNaN(route.split('/')[1]) ? route.replace(/\/(?!.*)/, "") : route.replace(/\/(.*)/, ""));
@@ -198,11 +200,10 @@ app.get("/categories", (req,res)=>{
 
 // when application links to /posts, fetch and display posts.json
 app.get("/posts", (req, res) => {
-    let qString = req.query;
 
-    // if the id 'key' exists
-    if (qString.minDate) {
-        data.getPostsByMinDate(qString.minDate).then((data) => {
+    // if the minDate 'query key' exists
+    if (req.query.minDate) {
+        data.getPostsByMinDate(req.query.minDate).then((data) => {
             res.render('posts', {posts : data});
         }).catch((err) => {
             console.log(err);
@@ -210,9 +211,9 @@ app.get("/posts", (req, res) => {
         });
     }
 
-    // if the category 'key' exists
-    else if (qString.category) {
-        data.getPostsByCategory(qString.category).then((data) => {
+    // if the category 'query key' exists
+    else if (req.query.category) {
+        data.getPostsByCategory(req.query.category).then((data) => {
             res.render('posts', {posts : data});
         }).catch((err) => {
             console.log(err);
@@ -220,7 +221,7 @@ app.get("/posts", (req, res) => {
         });
     }
     
-    // if neither category nor id keys exist
+    // if neither category nor minDate query keys exist in url
     else {
         data.getPosts().then((data) => {
             res.render('posts', {posts : data});
