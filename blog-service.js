@@ -116,7 +116,12 @@ module.exports.addPost = function (postData) {
             let day = date.getDate();
             let month = date.getMonth() + 1;
             let year = date.getFullYear();
-            date = (year + '-' + month + '-' + day);
+            if (day > 9) {
+                date = (year + '-' + month + '-' + day);
+            }
+            else {
+                date = (year + '-' + month + '-0' + day);
+            }
 
             // assigning a date
             postData.postDate = date;
