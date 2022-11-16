@@ -36,6 +36,8 @@ const app = express();
 const data = require("./blog-service");
 const { stringify } = require('querystring');
 
+app.use(express.urlencoded({extended: true}));
+
 app.engine('.hbs', exphbs.engine({ 
     extname: '.hbs',
     helpers: {
@@ -57,6 +59,15 @@ app.engine('.hbs', exphbs.engine({
 
         safeHTML: function(context){
             return stripJs(context);
+        },
+
+        formatDate: function(date) {
+            if (date) {
+                let year = date.getFullYear();
+                let month = (date.getMonth() + 1).toString();
+                let day = date.getDate().toString();
+                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            }
         }
     }
 }));
@@ -150,7 +161,8 @@ app.get('/blog/:id', async (req, res) => {
         if(req.query.category){
             // Obtain the published "posts" by category
             posts = await data.getPublishedPostsByCategory(req.query.category);
-        }else{
+        }
+        else{
             // Obtain the published "posts"
             posts = await data.getPublishedPosts();
         }
@@ -161,14 +173,16 @@ app.get('/blog/:id', async (req, res) => {
         // store the "posts" and "post" data in the viewData object (to be passed to the view)
         viewData.posts = posts;
 
-    }catch(err){
+    }
+    catch(err){
         viewData.message = "no results";
     }
 
     try{
         // Obtain the post by "id"
         viewData.post = await data.getPostByID(req.params.id);
-    }catch(err){
+    }
+    catch(err){
         viewData.message = "no results"; 
     }
 
@@ -178,7 +192,8 @@ app.get('/blog/:id', async (req, res) => {
 
         // store the "categories" data in the viewData object (to be passed to the view)
         viewData.categories = categories;
-    }catch(err){
+    }
+    catch(err){
         viewData.categoriesMessage = "no results"
     }
 
@@ -189,7 +204,9 @@ app.get('/blog/:id', async (req, res) => {
 // when application links to /categories, fetch and display categories.json
 app.get("/categories", (req,res)=>{
     data.getCategories().then((data)=>{
-       res.render('categories', {categories : data});
+        if (data.length) {
+            res.render('categories', { categories: data });
+        } else throw("");
     }).catch((err) => {
         console.log(err);
         res.render("categories", { message: "no results" });
@@ -205,7 +222,10 @@ app.get("/posts", (req, res) => {
     // if the minDate 'query key' exists
     if (req.query.minDate) {
         data.getPostsByMinDate(req.query.minDate).then((data) => {
-            res.render('posts', {posts : data});
+            if (data.length) {
+                res.render('posts', { posts: data });
+            }
+            else throw("");
         }).catch((err) => {
             console.log(err);
             res.render("posts", { message: "no results" });
@@ -215,7 +235,10 @@ app.get("/posts", (req, res) => {
     // if the category 'query key' exists
     else if (req.query.category) {
         data.getPostsByCategory(req.query.category).then((data) => {
-            res.render('posts', {posts : data});
+            if (data.length) {
+                res.render('posts', {posts : data});
+            }
+            else throw("");
         }).catch((err) => {
             console.log(err);
             res.render("posts", { message: "no results" });
@@ -225,7 +248,10 @@ app.get("/posts", (req, res) => {
     // if neither category nor minDate query keys exist in url
     else {
         data.getPosts().then((data) => {
-            res.render('posts', {posts : data});
+            if (data.length) {
+                res.render('posts', {posts : data});
+            }
+            else throw("");
         }).catch((err) => {
             console.log(err);
             // maybe render something else in accordance with error

@@ -1,11 +1,30 @@
-const fs = require("fs");
+const e = require('express');
+const Sequelize = require('sequelize');
+const {gte} = Sequelize.Op;
 
-var maxCategory = 5;
-var minCategory = 1;
+var sequelize = new Sequelize('zcqqvmai', 'zcqqvmai', 'ODHEYCrbCMZwGhrzXaExIHx5GcB3sN56', {
+    host: 'peanut.db.elephantsql.com',
+    dialect: 'postgres',
+    port: 5432,
+    dialectOptions: {
+        ssl: { rejectUnauthorized: false }
+    },
+    query: { raw: true }
+});
 
-var posts = [];
-var categories = [];
+var Post = sequelize.define('Post', {
+    body: Sequelize.TEXT,
+    title: Sequelize.STRING,
+    postDate: Sequelize.DATE,
+    featureImage: Sequelize.STRING,
+    published: Sequelize.BOOLEAN
+});
 
+var Category = sequelize.define('Category', {
+    category: Sequelize.STRING,
+});
+
+Post.belongsTo(Category, {foreignKey:'category'});
 
 /*
 read and parse posts.json, 
@@ -15,26 +34,10 @@ read and parse categories.json
 // initalizes data, rejects promise if failure occurs when reading file
 module.exports.initialize = function () {
     return new Promise((resolve, reject) => {
-        fs.readFile("./data/posts.json", 'utf8', (err, data) => {
-            if (err) {
-                reject("Error occured reading from posts.json: " + err);
-            }
-            else {
-                posts = JSON.parse(data);
-                resolve();
-            }
-        });
-    }).then(function () {
-        return new Promise((resolve, reject) => {
-            fs.readFile("./data/categories.json", 'utf8', (err, data) => {
-                if (err) {
-                    reject("Error occured reading from categories.json: " + err);
-                }
-                else {
-                    categories = JSON.parse(data);
-                    resolve();
-                }
-            })
+        sequelize.sync().then(()=>{
+            resolve();
+        }).catch((err)=>{
+            reject("Failure within initialize() -> " + err);
         })
     });
 }
@@ -44,103 +47,66 @@ module.exports.initialize = function () {
 // returns a resolved promise if the posts array is NOT empty
 module.exports.getPosts = function () {
     return new Promise((resolve, reject) => {
-        if (posts.length) {
-            resolve(posts);
-        }
-        else reject("No data exists in posts!");
+        Post.findAll().then((data)=>{
+            resolve(data);
+        }).catch((err)=>{
+            reject("Failure within getPosts() -> " + err);
+        });
     });
 }
 
 module.exports.getPostsByCategory = function (category) {
     return new Promise((resolve, reject) => {
-
-        // minCategory and maxCategory are global variables 
-        // defined at top of file
-
-        if (category >= minCategory && category <= maxCategory) {
-            var postsByCategory = [];
-            for (let post of posts) {
-
-                // if posts[i].category is equal to parameter
-                if (post.category == category) {
-                    postsByCategory.push(post);
-                }
-            }
-            // resolve if new array contains data, reject if not
-            if (postsByCategory.length) { resolve(postsByCategory); }
-            else reject("No data exists in this category: ");
-        }
-        // if supplied category does not exist, reject
-        else reject("Category does not exist: ");
-    })
+        Post.findAll(category).then((data)=>{
+            resolve(data);
+        }).catch(()=>{
+            reject("Failure within getPostsByCategory() -> " + err);
+        });
+    });
 }
 
 module.exports.getPostsByMinDate = function (minDate) {
     return new Promise((resolve, reject) => {
-        var postsByMinDate = [];
-        for (let post of posts) {
-
-            // if posts[i].postDate is greater than parameter
-            if (post.postDate > minDate) {
-                postsByMinDate.push(post);
+        Post.findAll({
+            where: {
+                postDate: {[gte]: new Date(minDate)}
             }
-        }
-        // resolve if new array contains data, reject if not
-        if (postsByMinDate.length) { resolve(postsByMinDate); }
-        else { reject("No data exists after supplied date."); }
+        }).then((data)=>{
+            resolve(data);
+        }).catch((err)=>{
+            reject("Failure in getPostsByMinDate() -> " + err);
+        });
     });
 }
 
 module.exports.getPostByID = function (ID) {
     return new Promise((resolve, reject) => {
-        let match = false;
-
-        for (let post of posts) {
-
-            // if post.id matches parameter id
-            if (post.id == ID) {
-                match = true;
-                resolve(post);
+        Post.findAll({
+            where: {
+                id: ID
             }
-        }
-        if (!match) reject("Post with ID " + ID + ": does not exist.")
+        }).then((data) => {
+            resolve(data[0]);
+        }).catch((err) => {
+            reject("Failure in getPostByID() -> " + err);
+        })
     })
 }
 
 module.exports.addPost = function (postData) {
     return new Promise((resolve, reject) => {
-        if (postData.featureImage != "") {
-
-            //producing current date
-            var date = new Date;
-            let day = date.getDate();
-            let month = date.getMonth() + 1;
-            let year = date.getFullYear();
-            if (day > 9) {
-                date = (year + '-' + month + '-' + day);
-            }
-            else {
-                date = (year + '-' + month + '-0' + day);
-            }
-
-            // assigning a date
-            postData.postDate = date;
-
-            // assigning an ID
-            postData.id = (posts.length + 1);
-
-            // assigning publishing status
-            if (postData.published != "on") {
-                postData.published = false;
-            }
-            else postData.published = true;
-
-            //pushing to posts array
-            posts.push(postData);
-            resolve(postData);
+        postData.published = postData.published ? true : false;
+        for (let e in postData) {
+            if (e == "") e = null;
         }
-        else reject(err);
-    })
+        postData.postDate = new Date();
+
+        Post.create(postData).then(()=>{
+            resolve();
+        }).catch((err) => {
+            reject("Failure in addPost() -> " + err);
+        })
+    });
 }
 
 // !GET POSTS, !ADD POSTS
@@ -149,12 +115,11 @@ module.exports.addPost = function (postData) {
 // returns a resolved promise if the categories array is NOT empty
 module.exports.getCategories = function () {
     return new Promise((resolve, reject) => {
-        if (categories.length) {
-            resolve(categories);
-        }
-        else {
-            reject("No categories exist!");
-        }
+        Category.findAll().then((data)=>{
+            resolve(data);
+        }).catch((err)=>{
+            reject("Failure within getCategories() -> " + err);
+        });
     });
 }
 
@@ -165,16 +130,13 @@ condition that each element is (published==true)
 // returns a resolved promise if the publishedPosts array is NOT empty
 module.exports.getPublishedPosts = function () {
     return new Promise((resolve, reject) => {
-        var publishedPosts = [];
-        for (let post of posts) {
-            if (post.published) {
-                publishedPosts.push(post);
+        Post.findAll({
+            where: {
+                published: true
             }
-        }
-        if (publishedPosts.length) {
-            resolve(publishedPosts);
-        }
-        else reject("No published posts exist!");
+        }).catch((err)=>{
+            reject("Failure within getPublishedPosts() -> " + err);
+        });
     });
 }
 
@@ -184,18 +146,50 @@ condition that each element is:
     (published==true) && (category==<user_supplied_category>)
 */
 // returns a resolved promise if the publishedPosts array is NOT empty
-module.exports.getPublishedPostsByCategory = function (category) {
+module.exports.getPublishedPostsByCategory = function (categoryData) {
     return new Promise((resolve, reject) => {
-        var publishedPosts = [];
-        for (let post of posts) {
-            if ((post.published) && (post.category == category)) {
-                publishedPosts.push(post);
-            }
-        }
-        if (publishedPosts.length) {
-            resolve(publishedPosts);
-        }
-        else reject("No published posts exist!");
+        Post.findAll({
+            where: [{
+                published: true,
+                category: categoryData
+            }]
+        }).catch((err) => {
+            reject("Failure within getPublishedPostsByCategory() -> " + err);
+        })
     });
 }
 
+
+// ASSIGNMENT 5 FUNCTIONALITIES //
+
+module.exports.addCategory = function(categoryData) {
+    return new Promise((resolve, reject) => {
+
+        for (let e in categoryData) {
+            if (e == "") e = null;
+        }
+        
+        
+        Category.create(categoryData).then(()=>{
+            resolve();
+        }).catch((err) => {
+            reject("Failure in addCategory() -> " + err);
+        })
+    });
+}
+
+module.exports.deleteCategoryById = function(categoryData) {
+    return new Promise((resolve, reject) => {
+        Category.destroy({
+            where: {id: categoryData.id}
+        })
+    });
+}
+
+module.exports.deletePostById = function(postData) {
+    return new Promise((resolve, reject) => {
+        Post.destroy({
+            where: {id: postData.id}
+        })
+    });
+}
