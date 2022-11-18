@@ -26,11 +26,7 @@ var Category = sequelize.define('Category', {
 
 Post.belongsTo(Category, {foreignKey:'category'});
 
-/*
-read and parse posts.json, 
-then, if successful, 
-read and parse categories.json
-*/
+
 // initalizes data, rejects promise if failure occurs when reading file
 module.exports.initialize = function () {
     return new Promise((resolve, reject) => {
@@ -55,9 +51,13 @@ module.exports.getPosts = function () {
     });
 }
 
-module.exports.getPostsByCategory = function (category) {
+module.exports.getPostsByCategory = function (catID) {
     return new Promise((resolve, reject) => {
-        Post.findAll(category).then((data)=>{
+        Post.findAll({
+            where: {
+                category: catID
+            }
+        }).then((data)=>{
             resolve(data);
         }).catch(()=>{
             reject("Failure within getPostsByCategory() -> " + err);
@@ -134,6 +134,8 @@ module.exports.getPublishedPosts = function () {
             where: {
                 published: true
             }
+        }).then((data) => {
+            resolve(data);
         }).catch((err)=>{
             reject("Failure within getPublishedPosts() -> " + err);
         });
@@ -153,6 +155,8 @@ module.exports.getPublishedPostsByCategory = function (categoryData) {
                 published: true,
                 category: categoryData
             }]
+        }).then((data) => {
+            resolve(data);
         }).catch((err) => {
             reject("Failure within getPublishedPostsByCategory() -> " + err);
         })
@@ -164,32 +168,37 @@ module.exports.getPublishedPostsByCategory = function (categoryData) {
 
 module.exports.addCategory = function(categoryData) {
     return new Promise((resolve, reject) => {
-
         for (let e in categoryData) {
             if (e == "") e = null;
         }
-        
-        
-        Category.create(categoryData).then(()=>{
-            resolve();
+        Category.create(categoryData).then((data)=>{
+            resolve(data);
         }).catch((err) => {
             reject("Failure in addCategory() -> " + err);
         })
     });
 }
 
-module.exports.deleteCategoryById = function(categoryData) {
+module.exports.deleteCategoryById = function(catID) {
     return new Promise((resolve, reject) => {
         Category.destroy({
-            where: {id: categoryData.id}
-        })
+            where: {id: catID}
+        }).then(() => {
+            resolve();
+        }).catch((err) => {
+            reject("Failed to delete category!" + err);
+        });
     });
 }
 
-module.exports.deletePostById = function(postData) {
+module.exports.deletePostById = function(postID) {
     return new Promise((resolve, reject) => {
         Post.destroy({
-            where: {id: postData.id}
+            where: {id: postID}
+        }).then((data) => {
+            resolve(data);
+        }).catch((err) => {
+            reject();
         })
     });
 }

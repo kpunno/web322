@@ -272,7 +272,11 @@ app.get("/post/:id", (req,res) => {
 
 // when url path is: /posts/add -> app will send /views/addPost.html
 app.get("/posts/add", (req,res) => {
-    res.render('addPost');
+    data.getCategories().then((data) => {
+        res.render('addPost', {categories: data});
+    }).catch(() => {
+        res.render('addPost', {categories: []})
+    })
 });
 
 app.post("/posts/add", upload.single("featureImage"), (req,res) => {
@@ -317,12 +321,50 @@ app.post("/posts/add", upload.single("featureImage"), (req,res) => {
             // catches the inability to process an empty image
             // then redirects to posts
             console.log(err);
-            res.redirect("/posts");
+            res.render("posts", {message: "nope"});
         });
     }
 });
 
+app.get("/posts/delete/:id", (req,res) => {
+    data.deletePostById(req.params.id).then((data) => {
+        res.redirect("/posts");
+        resolve(data);
+    }).catch(() => {
+        res.status(500).render('500', {type : "post"});
+    });
+});
+
 // !POSTS PATH
+
+// CATEGORIES PATH
+
+// when url path is: /categories/add -> app will send /views/addCategory.hbs
+app.get("/categories/add", (req,res) => {
+    res.render('addCategory');
+});
+
+app.post("/categories/add", (req, res) => {
+    data.addCategory(req.body).then(() => {
+        console.log("addCategory() success")
+        res.redirect("/categories");
+    }).catch((err) => {
+        console.log("addCategory() failure")
+        console.log(err);
+    })
+});
+
+app.get("/categories/delete/:id", (req,res) => {
+        data.deleteCategoryById(req.params.id).then((data) => {
+            res.redirect("/categories");
+            resolve(data);
+        }).catch((err) => {
+            console.log(err);
+            res.status(500).render('500', {type : "category"});
+        });
+});
+
+// !CATEGORIES PATH
 
 // initializes arrays containing .json data
 data.initialize().then(function() {
