@@ -164,7 +164,6 @@ module.exports.getPublishedPostsByCategory = function (categoryData) {
 }
 
 
-// ASSIGNMENT 5 FUNCTIONALITIES //
 
 module.exports.addCategory = function(categoryData) {
     return new Promise((resolve, reject) => {
