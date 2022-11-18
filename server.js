@@ -327,9 +327,10 @@ app.post("/posts/add", upload.single("featureImage"), (req,res) => {
 });
 
 app.get("/posts/delete/:id", (req,res) => {
-    data.deletePostById(req.params.id).then((data) => {
+    data.deletePostById(req.params.id).then(() => {
         res.redirect("/posts");
-        resolve(data);
+        console.log('test');
+        resolve();
     }).catch(() => {
         res.status(500).render('500', {type : "post"});
     });
@@ -355,9 +356,9 @@ app.post("/categories/add", (req, res) => {
 });
 
 app.get("/categories/delete/:id", (req,res) => {
-        data.deleteCategoryById(req.params.id).then((data) => {
+        data.deleteCategoryById(req.params.id).then(() => {
             res.redirect("/categories");
-            resolve(data);
+            resolve();
         }).catch((err) => {
             console.log(err);
             res.status(500).render('500', {type : "category"});
