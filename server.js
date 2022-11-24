@@ -36,7 +36,16 @@ const app = express();
 const data = require("./blog-service");
 const { stringify } = require('querystring');
 
+// ASSIGNMENT 6 INCLUSIONS //
+
+const authData = require('./auth-service');
+
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+
 app.use(express.urlencoded({extended: true}));
+
+mongoose.connect('mongodb+srv://kristjan:kristjanpunno@senecaweb.llnhc4s.mongodb.net/web322?retryWrites=true&w=majority');
 
 app.engine('.hbs', exphbs.engine({ 
     extname: '.hbs',
