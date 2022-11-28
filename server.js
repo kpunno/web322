@@ -1,6 +1,6 @@
 /*********************************************************************************
 * 
-*  WEB322 – Assignment 05
+*  WEB322 – Assignment 06
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  
 *  No part of this assignment has been copied manually or electronically 
 *  from any other source (including 3rd party web sites) or distributed to other students.
@@ -21,6 +21,26 @@ const streamifier = require('streamifier');
 const cloudinary = require('cloudinary').v2;
 const exphbs = require('express-handlebars');
 const stripJs = require('strip-js');
+const clientSessions = require('client-sessions');
+
+app.use(clientSessions({ 
+    cookieName: "login-session", 
+    secret: "kristjanpunno",
+    duration: 2 * 60 * 1000, 
+    activeDuration: 60 * 1000 
+}))
+
+function ensureLogin(req, res, next) {
+    if (!req.session.user) {
+        res.redirect('/login');
+    }
+    else { next(); }
+}
+
+app.use((req,res,next) => {
+    res.locals.session = req.session;
+    next();
+})
 
 cloudinary.config({
     cloud_name: 'dkjnonulv',
@@ -36,16 +56,13 @@ const app = express();
 const data = require("./blog-service");
 const { stringify } = require('querystring');
 
-// ASSIGNMENT 6 INCLUSIONS //
+app.use(express.urlencoded({extended: true}));
+
+// MONGOOSE //
 
 const authData = require('./auth-service');
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
-app.use(express.urlencoded({extended: true}));
-
-mongoose.connect('mongodb+srv://kristjan:kristjanpunno@senecaweb.llnhc4s.mongodb.net/web322?retryWrites=true&w=majority');
+// !MONGOOSE //
 
 app.engine('.hbs', exphbs.engine({ 
     extname: '.hbs',
@@ -156,6 +173,42 @@ app.get('/blog', async (req, res) => {
 
 });
 
+app.get('/login', (req, res) => {
+    res.render('login');
+})
+
+app.get('/register', (req, res) => {
+    res.render('register');
+})
+
+app.post('/register', (req, res) => {
+    authData.registerUser(req.body).then(() => {
+        res.render('/register', {message: "User created"})
+    }).catch((err) => {
+        res.render('/register', {message : err, username : req.body.username});
+    });  
+})
+
+app.post('/login', (req, res) => {
+    req.body.userAgent = req.get('User-Agent');
+    authData.checkUser(req.body).then((user) => {
+        req.session.user = {
+            username : user.username,
+            email : user.email,
+            loginHistory: user.loginHistory
+        }
+
+        res.redirect('/posts');
+    }).catch((err) => {
+        res.render('login', {message: err, username: req.body.username});
+    });
+})
+
+app.get('/logout', (req,res) => {
+    req.session.reset();
+    res.redirect('/login');
+})
+
 app.get('/blog/:id', async (req, res) => {
 
     // Declare an object to store properties for the view
@@ -211,7 +264,7 @@ app.get('/blog/:id', async (req, res) => {
 });
 
 // when application links to /categories, fetch and display categories.json
-app.get("/categories", (req,res)=>{
+app.get("/categories", ensureLogin, (req,res)=>{
     data.getCategories().then((data)=>{
         if (data.length) {
             res.render('categories', { categories: data });
@@ -226,7 +279,7 @@ app.get("/categories", (req,res)=>{
 // POSTS PATH //
 
 // when application links to /posts, fetch and display posts.json
-app.get("/posts", (req, res) => {
+app.get("/posts", ensureLogin, (req, res) => {
 
     // if the minDate 'query key' exists
     if (req.query.minDate) {
@@ -270,7 +323,7 @@ app.get("/posts", (req, res) => {
 });
 
 // get post by specified ID
-app.get("/post/:id", (req,res) => {
+app.get("/post/:id", ensureLogin, (req,res) => {
     data.getPostByID(req.params.id).then((data) => {
         res.json(data);
     }).catch((err) => {
@@ -280,7 +333,7 @@ app.get("/post/:id", (req,res) => {
 })
 
 // when url path is: /posts/add -> app will send /views/addPost.html
-app.get("/posts/add", (req,res) => {
+app.get("/posts/add", ensureLogin, (req,res) => {
     data.getCategories().then((data) => {
         res.render('addPost', {categories: data});
     }).catch(() => {
@@ -288,7 +341,7 @@ app.get("/posts/add", (req,res) => {
     })
 });
 
-app.post("/posts/add", upload.single("featureImage"), (req,res) => {
+app.post("/posts/add", ensureLogin, upload.single("featureImage"), (req,res) => {
     if (req.file) {
         let streamUpload = (req) => {
             return new Promise((resolve, reject) => {
@@ -335,7 +388,7 @@ app.post("/posts/add", upload.single("featureImage"), (req,res) => {
     }
 });
 
-app.get("/posts/delete/:id", (req,res) => {
+app.get("/posts/delete/:id", ensureLogin, (req,res) => {
     data.deletePostById(req.params.id).then(() => {
         res.redirect("/posts");
         console.log('test');
@@ -350,11 +403,11 @@ app.get("/posts/delete/:id", (req,res) => {
 // CATEGORIES PATH
 
 // when url path is: /categories/add -> app will send /views/addCategory.hbs
-app.get("/categories/add", (req,res) => {
+app.get("/categories/add", ensureLogin, (req,res) => {
     res.render('addCategory');
 });
 
-app.post("/categories/add", (req, res) => {
+app.post("/categories/add", ensureLogin, (req, res) => {
     data.addCategory(req.body).then(() => {
         console.log("addCategory() success")
         res.redirect("/categories");
@@ -364,7 +417,7 @@ app.post("/categories/add", (req, res) => {
     })
 });
 
-app.get("/categories/delete/:id", (req,res) => {
+app.get("/categories/delete/:id", ensureLogin, (req,res) => {
         data.deleteCategoryById(req.params.id).then(() => {
             res.redirect("/categories");
             resolve();
@@ -377,7 +430,9 @@ app.get("/categories/delete/:id", (req,res) => {
 // !CATEGORIES PATH
 
 // initializes arrays containing .json data
-data.initialize().then(function() {
+data.initialize()
+.then(authData.initialize())
+.then(() => {
     app.listen(HTTP_PORT, onHttpStart);
 }).catch((err) => {
     console.log("Unable to start server: " + err)

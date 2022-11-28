@@ -1,4 +1,4 @@
-## web-322 -- assignment 5
+## web-322 -- assignment 6
 
 [web-app](https://tasty-headscarf-ox.cyclic.app/about)
 
