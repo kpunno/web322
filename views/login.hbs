@@ -1,0 +1,21 @@
+<div class="col-md-12">
+  <h2>Login</h2>
+  <hr>
+  {{#if message}}
+    <div class="alert alert-danger">
+        <strong>Error:</strong> {{message}}
+    </div>
+  {{/if}}
+  <form method="post" action="/login">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="form-group">
+          <input class="full-tbox" type="text" name="username" id="username" placeholder="Username" size="40" autofocus required>
+          <input class="full-tbox" type="password" name="password" id="password" placeholder="Password" size="40" required>
+          <hr>
+          <input type="submit" class="btn btn-primary pull-right" value="Login"><br><br><br>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

@@ -23,25 +23,6 @@ const exphbs = require('express-handlebars');
 const stripJs = require('strip-js');
 const clientSessions = require('client-sessions');
 
-app.use(clientSessions({ 
-    cookieName: "login-session", 
-    secret: "kristjanpunno",
-    duration: 2 * 60 * 1000, 
-    activeDuration: 60 * 1000 
-}))
-
-function ensureLogin(req, res, next) {
-    if (!req.session.user) {
-        res.redirect('/login');
-    }
-    else { next(); }
-}
-
-app.use((req,res,next) => {
-    res.locals.session = req.session;
-    next();
-})
-
 cloudinary.config({
     cloud_name: 'dkjnonulv',
     api_key: '394872553728763',
@@ -57,6 +38,25 @@ const data = require("./blog-service");
 const { stringify } = require('querystring');
 
 app.use(express.urlencoded({extended: true}));
+
+app.use(clientSessions({ 
+    cookieName: "session", 
+    secret: "web322_a6_kpunno",
+    duration: 2 * 60 * 1000, 
+    activeDuration: 60 * 1000 
+}))
+
+app.use(function (req,res,next) {
+    res.locals.session = req.session;
+    next();
+})
+
+function ensureLogin(req, res, next) {
+    if (!req.session.user) {
+        res.redirect("/login");
+    }
+    else { next(); }
+}
 
 // MONGOOSE //
 
@@ -183,30 +183,32 @@ app.get('/register', (req, res) => {
 
 app.post('/register', (req, res) => {
     authData.registerUser(req.body).then(() => {
-        res.render('/register', {message: "User created"})
+        res.render('register', {message: "User created"})
     }).catch((err) => {
-        res.render('/register', {message : err, username : req.body.username});
+        res.render('register', {errMessage : err, username : req.body.username});
     });  
 })
 
 app.post('/login', (req, res) => {
     req.body.userAgent = req.get('User-Agent');
     authData.checkUser(req.body).then((user) => {
+
         req.session.user = {
             username : user.username,
             email : user.email,
             loginHistory: user.loginHistory
-        }
-
-        res.redirect('/posts');
+        };
+        
+        res.redirect("/posts");
     }).catch((err) => {
+        console.log("problem");
         res.render('login', {message: err, username: req.body.username});
     });
 })
 
 app.get('/logout', (req,res) => {
     req.session.reset();
-    res.redirect('/login');
+    res.redirect('/');
 })
 
 app.get('/blog/:id', async (req, res) => {
@@ -271,7 +273,7 @@ app.get("/categories", ensureLogin, (req,res)=>{
         } else throw("");
     }).catch((err) => {
         console.log(err);
-        res.render("categories", { message: "no results" });
+        res.render('categories', { message: "no results" });
     });
 })
 
@@ -332,7 +334,7 @@ app.get("/post/:id", ensureLogin, (req,res) => {
     });
 })
 
-// when url path is: /posts/add -> app will send /views/addPost.html
+// when url path is: /posts/add -> app will send /views/addPost.hbs
 app.get("/posts/add", ensureLogin, (req,res) => {
     data.getCategories().then((data) => {
         res.render('addPost', {categories: data});
