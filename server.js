@@ -37,32 +37,31 @@ const app = express();
 const data = require("./blog-service");
 const { stringify } = require('querystring');
 
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({extended: false}));
 
-app.use(clientSessions({ 
+app.use(clientSessions({
     cookieName: "session", 
-    secret: "web322_a6_kpunno",
-    duration: 2 * 60 * 1000, 
-    activeDuration: 60 * 1000 
-}))
+    secret: "web322_a6_kpunno", 
+    duration: 2 * 60 * 1000,
+    activeDuration: 60 * 1000
+  }));
 
-app.use(function (req,res,next) {
+app.use(function (req, res, next) {
     res.locals.session = req.session;
     next();
-})
+});
 
 function ensureLogin(req, res, next) {
+    console.log(req.session.user); //third log
     if (!req.session.user) {
-        res.redirect("/login");
+      res.redirect("/login");
+    } 
+    else {
+        next();
     }
-    else { next(); }
 }
 
-// MONGOOSE //
-
 const authData = require('./auth-service');
-
-// !MONGOOSE //
 
 app.engine('.hbs', exphbs.engine({ 
     extname: '.hbs',
@@ -193,6 +192,8 @@ app.post('/login', (req, res) => {
     req.body.userAgent = req.get('User-Agent');
     authData.checkUser(req.body).then((user) => {
 
+        console.log(user.username); // user.username is fetched
+
         req.session.user = {
             username : user.username,
             email : user.email,
@@ -201,14 +202,18 @@ app.post('/login', (req, res) => {
         
         res.redirect("/posts");
     }).catch((err) => {
-        console.log("problem");
+        console.log(err);
         res.render('login', {message: err, username: req.body.username});
     });
 })
 
+app.get('/userHistory', (req, res) => {
+    res.render('userHistory');
+})
+
 app.get('/logout', (req,res) => {
     req.session.reset();
-    res.redirect('/');
+    res.redirect('/login');
 })
 
 app.get('/blog/:id', async (req, res) => {

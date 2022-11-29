@@ -1,0 +1,29 @@
+<div class="row">
+    <div class="col-md-12">
+        <h2>
+            History<br>
+        </h2>
+        <h3 style="color:rgb(225, 225, 205)">
+            {{session.user.username}} | <i>{{session.user.email}}</i>
+        </h3>
+        <hr>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Login Time</th>
+                        <th>Client Information</th>
+                    </tr>
+                </thead>            
+                <tbody>
+                    {{#each session.user.loginHistory}}
+                    <tr>
+                        <td>{{dateTime}}</td>
+                        <td>{{userAgent}}</td>
+                    </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
