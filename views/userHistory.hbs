@@ -1,5 +1,6 @@
 <div class="row">
     <div class="col-md-12">
+        {{#if session.user}}
         <h2>
             History<br>
         </h2>
@@ -24,6 +25,12 @@
                     {{/each}}
                 </tbody>
             </table>
+            {{else}}
+            <h2>
+            Session Timeout<br>
+            </h2>
+            {{/if}}
+            
         </div>
     </div>
 </div>
