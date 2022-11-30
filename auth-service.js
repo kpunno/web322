@@ -88,7 +88,7 @@ module.exports.checkUser = function (userData) {
                                     })
                             }
                             else {
-                                reject('Incorrect password');
+                                reject('Password is incorrect');
                             }
                         })
                 }

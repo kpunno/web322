@@ -52,7 +52,6 @@ app.use(function (req, res, next) {
 });
 
 function ensureLogin(req, res, next) {
-    console.log(req.session.user); //third log
     if (!req.session.user) {
       res.redirect("/login");
     } 
@@ -192,8 +191,6 @@ app.post('/login', (req, res) => {
     req.body.userAgent = req.get('User-Agent');
     authData.checkUser(req.body).then((user) => {
 
-        console.log(user.username); // user.username is fetched
-
         req.session.user = {
             username : user.username,
             email : user.email,
@@ -213,7 +210,7 @@ app.get('/userHistory', (req, res) => {
 
 app.get('/logout', (req,res) => {
     req.session.reset();
-    res.redirect('/login');
+    res.redirect('/');
 })
 
 app.get('/blog/:id', async (req, res) => {
