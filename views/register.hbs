@@ -13,7 +13,7 @@
   <a class="btn btn-success pull-right" href="/login">
     &nbsp;&nbsp;&nbsp;Proceed to Log in&nbsp;&nbsp;&nbsp;
   </a><br/><br/><br/>
-  {{/if}}
+  {{else}}
   <form method="post" action="/register">
     <div class="row">
       <div class="col-md-12">
@@ -27,5 +27,6 @@
         </div>
       </div>
     </div>
+    {{/if}}
   </form>
 </div>
