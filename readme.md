@@ -1,4 +1,4 @@
-## web-322 -- assignment 6
+## web-322
 
 [web-app](https://tasty-headscarf-ox.cyclic.app/about)
 
@@ -7,4 +7,4 @@ Kristjan Punno
 kpunno@myseneca.ca  
 NFF  
 
-Dedicated application for web322 assignments ->
+Dedicated application for web322
